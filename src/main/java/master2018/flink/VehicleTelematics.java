@@ -2,11 +2,11 @@ package master2018.flink;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import scala.Tuple6;
 
 public class VehicleTelematics {
     public static void main(String[] args) {
@@ -31,12 +31,12 @@ public class VehicleTelematics {
         }).filter(new FilterFunction<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public boolean filter(Tuple6<Integer, Integer, Integer, Integer, Integer, Integer> outFilter) throws Exception {
-                if (outFilter._6() > 90){
+                if (outFilter.f5 > 90){
                     return true;
                 }else{return false;}
             }
         });
-        filterOut.writeAsText(outFilePath, FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        filterOut.writeAsCsv(outFilePath+"/speedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
 
         try{
             env.execute("VeichleTelematics");

@@ -20,7 +20,6 @@ import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindow
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
-import scala.Int;
 
 
 import java.util.Iterator;
@@ -35,7 +34,7 @@ public class avgspeedfines {
         String inFilePath = args[0];
         String outFilePath = args[1];
 
-        DataStreamSource<String> source = env.readTextFile(inFilePath);
+        DataStreamSource<String> source = env.readTextFile(inFilePath).setParallelism(1);
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> mapString = source.map(new MapFunction<String, Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
@@ -52,7 +51,7 @@ public class avgspeedfines {
             @Override
             public boolean filter(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> outFilter) throws Exception {
                 if (outFilter.f6 >= 52 && outFilter.f6 <= 56) {
-                    System.out.println("filter");
+                    //System.out.println("filter");
                     return true;
                 } else {
                     return false;
@@ -69,58 +68,50 @@ public class avgspeedfines {
             @Override
             public Tuple3<Integer, Integer, Integer> getKey(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> value) throws Exception {
                 Tuple3<Integer, Integer, Integer> key = new Tuple3<>(value.f1, value.f3, value.f5);
-                System.out.println("Keyby");
+                //System.out.println("Keyby");
                 return key;
             }
         }).window(EventTimeSessionWindows.withGap(Time.seconds(60))).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>, Tuple3<Integer, Integer, Integer>, TimeWindow>() {
             @Override
             public void apply(Tuple3<Integer, Integer, Integer> key, TimeWindow timeWindow, Iterable<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> input, Collector<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> output) throws Exception {
                 Iterator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> iterator = input.iterator();
-                Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> min = iterator.next();
-                Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> max = iterator.next();
-                double  AvgSpd = 0;
-                double convFact = 3600.0/1609.344;
-                System.out.println("apply");
+                Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> min, max;
+                min = max = iterator.next();
+                double AvgSpd = 0;
+                double convFact = 2.236936292054402;
+                //System.out.println("apply");
 
                 for (Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> next : input) {
-                    System.out.println("for");
-                    if (min.f0 > next.f0) {
-                        System.out.println("for primo if min");
+                    //System.out.println("for");
+                    if (min.f7 > next.f7) {
+                        //System.out.println("for primo if min");
                         min = next;
                     }
-                    if (max.f0 < next.f0) {
-                        System.out.println(max.f6);
+                    if (max.f7 < next.f7) {
+                        //System.out.println(max.f6);
                         max = next;
                     }
                 }
-
-                if (min.f6 == 52 && max.f6 == 56) {
+                AvgSpd = (abs(min.f7 - max.f7) * 1.0 / abs(min.f0 - max.f0)) * convFact;
+                if (min.f6 == 52 && max.f6 == 56 && AvgSpd > 60) {
                     System.out.println("inside if");
+                    System.out.println(min.f5);
                     if (min.f5 == 0) {
-                        System.out.println(AvgSpd);
-                        AvgSpd = (abs(min.f7 - max.f7) / abs(min.f0 - max.f0)) * convFact;
-                        if (AvgSpd > 60) {
-                            System.out.println(AvgSpd);
-                            output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(min.f0, max.f0,min.f1,min.f3,min.f5, (int) AvgSpd));
-                        }
+                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(min.f0, max.f0, min.f1, min.f3, min.f5, (int) AvgSpd));
                     } else {
-
-                        AvgSpd = (abs(min.f7 - max.f7) / abs(min.f0 - max.f0)) * convFact;
-                        System.out.println(AvgSpd);
-                        if (AvgSpd > 60) {
-                            output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(max.f0, min.f0, max.f1, max.f3, max.f5, (int) AvgSpd));
-                        }
+                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(max.f0, min.f0, max.f1, max.f3, max.f5, (int) AvgSpd));
                     }
                 }
 
             }
-        }).setParallelism(10);
+        });
 
         keyedStream.writeAsCsv(outFilePath + "/avgspeedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
-
+        
         try {
             env.execute("VeichleTelematics");
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             e.printStackTrace();
         }
 

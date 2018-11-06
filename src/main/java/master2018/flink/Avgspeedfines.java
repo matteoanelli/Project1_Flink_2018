@@ -22,36 +22,19 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
 
+
 import java.util.Iterator;
 
 import static java.lang.Math.abs;
 
-public class avgspeedfines {
-    public static void main(String[] args) {
+public class Avgspeedfines {
+    public Avgspeedfines(String outFilePath, SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> mapString) {
 
-        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        String inFilePath = args[0];
-        String outFilePath = args[1];
-
-        DataStreamSource<String> source = env.readTextFile(inFilePath).setParallelism(1);
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-
-        SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> mapString = source.map(new MapFunction<String, Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
-            @Override
-            public Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> map(String s) throws Exception {
-
-                String[] fieldArray = s.split(",");
-                Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> out = new
-                        Tuple8<>(Integer.parseInt(fieldArray[0]), Integer.parseInt(fieldArray[1]), Integer.parseInt(fieldArray[2]), Integer.parseInt(fieldArray[3]),
-                        Integer.parseInt(fieldArray[4]), Integer.parseInt(fieldArray[5]), Integer.parseInt(fieldArray[6]), Integer.parseInt(fieldArray[7]));
-                return out;
-            }
-        }).filter(new FilterFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
+        SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> out = mapString.filter(new FilterFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public boolean filter(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> outFilter) throws Exception {
                 if (outFilter.f6 >= 52 && outFilter.f6 <= 56) {
-                    //System.out.println("filter");
                     return true;
                 } else {
                     return false;
@@ -79,23 +62,18 @@ public class avgspeedfines {
                 min = max = iterator.next();
                 double AvgSpd = 0;
                 double convFact = 2.236936292054402;
-                //System.out.println("apply");
 
                 for (Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> next : input) {
-                    //System.out.println("for");
                     if (min.f7 > next.f7) {
-                        //System.out.println("for primo if min");
                         min = next;
                     }
                     if (max.f7 < next.f7) {
-                        //System.out.println(max.f6);
                         max = next;
                     }
                 }
                 AvgSpd = (abs(min.f7 - max.f7) * 1.0 / abs(min.f0 - max.f0)) * convFact;
                 if (min.f6 == 52 && max.f6 == 56 && AvgSpd > 60) {
-                    System.out.println("inside if");
-                    System.out.println(min.f5);
+
                     if (min.f5 == 0) {
                         output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(min.f0, max.f0, min.f1, min.f3, min.f5, (int) AvgSpd));
                     } else {
@@ -107,13 +85,6 @@ public class avgspeedfines {
         });
 
         keyedStream.writeAsCsv(outFilePath + "/avgspeedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
-        
-        try {
-            env.execute("VeichleTelematics");
-        } catch (
-                Exception e) {
-            e.printStackTrace();
-        }
 
     }
 }

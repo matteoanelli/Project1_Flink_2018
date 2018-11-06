@@ -1,11 +1,7 @@
 package master2018.flink;
 
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.tuple.Tuple6;
-import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.tuple.Tuple8;
-import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -35,6 +31,7 @@ public class VehicleTelematics {
         }).setParallelism(1);
 
         SpeedRadar speedRadar = new SpeedRadar(outFilePath, mapString);
+
 
         AccidentReport accidentReport = new AccidentReport(outFilePath, mapString);
 

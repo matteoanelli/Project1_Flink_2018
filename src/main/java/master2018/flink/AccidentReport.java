@@ -11,8 +11,6 @@ import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
 import java.util.Iterator;
 
-
-
 public class AccidentReport {
 
     public AccidentReport(String outFilePath, SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> mapString) {

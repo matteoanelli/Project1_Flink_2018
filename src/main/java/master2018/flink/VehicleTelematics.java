@@ -32,8 +32,6 @@ public class VehicleTelematics {
 
         SpeedRadar speedRadar = new SpeedRadar(outFilePath, mapString);
         Avgspeedfines avgspeedfines = new Avgspeedfines(outFilePath,mapString);
-
-
         AccidentReport accidentReport = new AccidentReport(outFilePath, mapString);
 
 

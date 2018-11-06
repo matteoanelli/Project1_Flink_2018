@@ -36,6 +36,7 @@ public class VehicleTelematics {
 
         SpeedRadar speedRadar = new SpeedRadar(outFilePath, mapString);
 
+        AccidentReport accidentReport = new AccidentReport(outFilePath, mapString);
 
 
         try{

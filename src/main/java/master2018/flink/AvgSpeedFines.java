@@ -34,7 +34,7 @@ public class AvgSpeedFines {
             }
         });
 
-        SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> keyedStream = mapString.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
+        SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> keyedStream = out.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public long extractAscendingTimestamp(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> element) {
                 return element.f0;
@@ -43,10 +43,9 @@ public class AvgSpeedFines {
             @Override
             public Tuple3<Integer, Integer, Integer> getKey(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> value) throws Exception {
                 Tuple3<Integer, Integer, Integer> key = new Tuple3<>(value.f1, value.f3, value.f5);
-                //System.out.println("Keyby");
                 return key;
             }
-        }).window(EventTimeSessionWindows.withGap(Time.seconds(60))).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>, Tuple3<Integer, Integer, Integer>, TimeWindow>() {
+        }).window(EventTimeSessionWindows.withGap(Time.seconds(31))).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>, Tuple3<Integer, Integer, Integer>, TimeWindow>() {
             @Override
             public void apply(Tuple3<Integer, Integer, Integer> key, TimeWindow timeWindow, Iterable<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> input, Collector<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> output) throws Exception {
                 Iterator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> iterator = input.iterator();

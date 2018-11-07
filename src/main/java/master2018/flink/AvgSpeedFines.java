@@ -32,7 +32,7 @@ public class AvgSpeedFines {
                     return false;
                 }
             }
-        });
+        }).setParallelism(1);
 
         SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> keyedStream = out.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override

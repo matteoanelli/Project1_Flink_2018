@@ -17,7 +17,7 @@ public class SpeedRadar {
                     return true;
                 }else{return false;}
             }
-        }).map(new MapFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>>() {
+        }).setParallelism(1).map(new MapFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public Tuple6<Integer, Integer, Integer, Integer, Integer, Integer> map(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> in) throws Exception {
                 return new Tuple6<>(in.f0, in.f1, in.f3,in.f6,in.f5,in.f2);

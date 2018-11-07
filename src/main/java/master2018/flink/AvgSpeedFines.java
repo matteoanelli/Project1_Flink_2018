@@ -34,7 +34,7 @@ public class AvgSpeedFines {
             }
         }).setParallelism(1);
 
-        SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> keyedStream = out.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
+        SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Double>> keyedStream = out.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public long extractAscendingTimestamp(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> element) {
                 return element.f0;
@@ -45,9 +45,9 @@ public class AvgSpeedFines {
                 Tuple3<Integer, Integer, Integer> key = new Tuple3<>(value.f1, value.f3, value.f5);
                 return key;
             }
-        }).window(EventTimeSessionWindows.withGap(Time.seconds(31))).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>, Tuple3<Integer, Integer, Integer>, TimeWindow>() {
+        }).window(EventTimeSessionWindows.withGap(Time.seconds(31))).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple6<Integer, Integer, Integer, Integer, Integer, Double>, Tuple3<Integer, Integer, Integer>, TimeWindow>() {
             @Override
-            public void apply(Tuple3<Integer, Integer, Integer> key, TimeWindow timeWindow, Iterable<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> input, Collector<Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>> output) throws Exception {
+            public void apply(Tuple3<Integer, Integer, Integer> key, TimeWindow timeWindow, Iterable<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> input, Collector<Tuple6<Integer, Integer, Integer, Integer, Integer, Double>> output) throws Exception {
                 Iterator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> iterator = input.iterator();
                 Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> min, max;
                 min = max = iterator.next();
@@ -66,9 +66,9 @@ public class AvgSpeedFines {
                 if (min.f6 == 52 && max.f6 == 56 && AvgSpd > 60) {
 
                     if (min.f5 == 0) {
-                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(min.f0, max.f0, min.f1, min.f3, min.f5, (int) AvgSpd));
+                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(min.f0, max.f0, min.f1, min.f3, min.f5,AvgSpd));
                     } else {
-                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Integer>(max.f0, min.f0, max.f1, max.f3, max.f5, (int) AvgSpd));
+                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(max.f0, min.f0, max.f1, max.f3, max.f5,AvgSpd));
                     }
                 }
 

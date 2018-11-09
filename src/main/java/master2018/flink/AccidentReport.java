@@ -32,23 +32,31 @@ public class AccidentReport {
             @Override
             public void apply(Tuple key, GlobalWindow window, Iterable<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> in, Collector<Tuple7<Integer, Integer, Integer, Integer, Integer, Integer, Integer>> out) throws Exception {
 
-                Iterator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> iterator = in.iterator();
-                Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> event1 = iterator.next();
+                //Iterator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> iterator = in.iterator();
+                Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> event1 = null;/* = iterator.next();*/
 
-                int count = 1, tFinal = 0;
+                int count = 0, tFinal = 0;
 
+                for (Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> i:in) {
+                    if(count==0)
+                        event1=i;
+                    if(count==3)
+                        tFinal=i.f0;
+                    count++;
+                }
+                /*
                 while (iterator.hasNext()) {
                     count++;
                     if(count==4)
                         tFinal=iterator.next().f0;
                     else
                         iterator.next();
-                }
+                }*/
                 if (count == 4)
                     out.collect(new Tuple7<Integer, Integer, Integer, Integer, Integer, Integer, Integer>(event1.f0, tFinal, event1.f1, event1.f3, event1.f6, event1.f5, event1.f7));
             }
         });
 
-        accidentOut.writeAsCsv(outFilePath+"/accidents.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        accidentOut.writeAsCsv(outFilePath+"/accidents.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1).name("AccedentReporter");
     }
 }

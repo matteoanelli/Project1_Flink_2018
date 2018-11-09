@@ -22,15 +22,16 @@ import static java.lang.Math.abs;
 public class AvgSpeedFines {
     public AvgSpeedFines(String outFilePath, SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> mapString) {
 
+        //  0    1    2     3     4    5    6    7
+        //Time, VID, Spd, XWay, Lane, Dir, Seg, Pos
 
         SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> out = mapString.filter(new FilterFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public boolean filter(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> outFilter) throws Exception {
-                if (outFilter.f6 >= 52 && outFilter.f6 <= 56) {
+                if (outFilter.f6 >= 52 && outFilter.f6 <= 56)
                     return true;
-                } else {
+                else
                     return false;
-                }
             }
         }).setParallelism(1);
 
@@ -55,27 +56,25 @@ public class AvgSpeedFines {
                 double convFact = 2.236936292054402;
 
                 for (Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> next : input) {
-                    if (min.f7 > next.f7) {
+                    if (min.f7 > next.f7)
                         min = next;
-                    }
-                    if (max.f7 < next.f7) {
+                    if (max.f7 < next.f7)
                         max = next;
-                    }
                 }
                 AvgSpd = (abs(min.f7 - max.f7) * 1.0 / abs(min.f0 - max.f0)) * convFact;
                 if (min.f6 == 52 && max.f6 == 56 && AvgSpd > 60) {
 
-                    if (min.f5 == 0) {
+                    if (min.f5 == 0)
                         output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(min.f0, max.f0, min.f1, min.f3, min.f5,AvgSpd));
-                    } else {
+                    else
                         output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(max.f0, min.f0, max.f1, max.f3, max.f5,AvgSpd));
-                    }
+
                 }
 
             }
         });
 
-        keyedStream.writeAsCsv(outFilePath + "/avgspeedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        keyedStream.writeAsCsv(outFilePath + "/avgspeedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1).name("AvgSpeedFines");
 
     }
 }

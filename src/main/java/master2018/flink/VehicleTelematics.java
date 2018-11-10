@@ -31,7 +31,7 @@ public class VehicleTelematics {
         }).setParallelism(1);
 
         SpeedRadar speedRadar = new SpeedRadar(outFilePath, mapString);
-        //AvgSpeedFines avgspeedfines = new AvgSpeedFines(outFilePath,mapString);
+        AvgSpeedFines avgspeedfines = new AvgSpeedFines(outFilePath,mapString);
         AccidentReport accidentReport = new AccidentReport(outFilePath, mapString);
 
 

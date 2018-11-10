@@ -29,7 +29,7 @@ public class AccidentReport {
                 else
                     return false;
             }
-        }).setParallelism(1).keyBy(1,3,4,5,6,7).countWindow(4,1).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple7<Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple, GlobalWindow>() {
+        }).setParallelism(1).keyBy(1,3,5,6,7).countWindow(4,1).apply(new WindowFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple7<Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple, GlobalWindow>() {
             @Override
             public void apply(Tuple key, GlobalWindow window, Iterable<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> in, Collector<Tuple7<Integer, Integer, Integer, Integer, Integer, Integer, Integer>> out) throws Exception {
 
@@ -46,7 +46,8 @@ public class AccidentReport {
                     count++;
                 }
 
-                /*
+
+/*
                 for (Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> i:in) {
                     if(count==0){
                         event1=i;
@@ -59,8 +60,8 @@ public class AccidentReport {
 
                     count++;
                 }
-                */
-                /*
+
+
                 while (iterator.hasNext()) {
                     count++;
                     if(count==4)

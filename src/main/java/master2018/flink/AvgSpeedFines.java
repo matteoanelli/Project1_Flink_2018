@@ -25,7 +25,7 @@ public class AvgSpeedFines {
         //  0    1    2     3     4    5    6    7
         //Time, VID, Spd, XWay, Lane, Dir, Seg, Pos
 
-        SingleOutputStreamOperator<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> out = mapString.filter(new FilterFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
+        SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Double>> out = mapString.filter(new FilterFunction<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public boolean filter(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> outFilter) throws Exception {
                 if (outFilter.f6 >= 52 && outFilter.f6 <= 56)
@@ -33,12 +33,10 @@ public class AvgSpeedFines {
                 else
                     return false;
             }
-        }).setParallelism(1);
-
-        SingleOutputStreamOperator<Tuple6<Integer, Integer, Integer, Integer, Integer, Double>> keyedStream = out.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
+        }).assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>>() {
             @Override
             public long extractAscendingTimestamp(Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> element) {
-                return element.f0;
+                return element.f0 * 1000;
             }
         }).keyBy(new KeySelector<Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>, Tuple3<Integer, Integer, Integer>>() {
             @Override
@@ -65,16 +63,17 @@ public class AvgSpeedFines {
                 if (min.f6 == 52 && max.f6 == 56 && AvgSpd > 60) {
 
                     if (min.f5 == 0)
-                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(min.f0, max.f0, min.f1, min.f3, min.f5,AvgSpd));
+                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(min.f0, max.f0, min.f1, min.f3, min.f5, AvgSpd));
                     else
-                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(max.f0, min.f0, max.f1, max.f3, max.f5,AvgSpd));
+                        output.collect(new Tuple6<Integer, Integer, Integer, Integer, Integer, Double>(max.f0, min.f0, max.f1, max.f3, max.f5, AvgSpd));
+
 
                 }
 
             }
         });
 
-        keyedStream.writeAsCsv(outFilePath + "/avgspeedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1).name("AvgSpeedFines");
+        out.writeAsCsv(outFilePath + "/avgspeedfines.csv", FileSystem.WriteMode.OVERWRITE).setParallelism(1).name("AvgSpeedFines");
 
     }
 }

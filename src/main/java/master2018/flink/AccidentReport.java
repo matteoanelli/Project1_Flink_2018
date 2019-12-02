@@ -46,30 +46,6 @@ public class AccidentReport {
                     count++;
                 }
 
-
-/*
-                for (Tuple8<Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> i:in) {
-                    if(count==0){
-                        event1=i;
-                        tFinal=i.f0;
-                    }
-                    if(event1.f0>i.f0)
-                        event1=i;
-                    if(tFinal<i.f0)
-                        tFinal=i.f0;
-
-                    count++;
-                }
-
-
-                while (iterator.hasNext()) {
-                    count++;
-                    if(count==4)
-                        tFinal=iterator.next().f0;
-                    else
-                        iterator.next();
-                }
-                */
                 if (count == 4)
                     out.collect(new Tuple7<Integer, Integer, Integer, Integer, Integer, Integer, Integer>(event1.f0, tFinal, event1.f1, event1.f3, event1.f6, event1.f5, event1.f7));
             }
